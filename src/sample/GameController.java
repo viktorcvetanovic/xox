@@ -17,12 +17,14 @@ public class GameController {
     private Stage primaryStage;
     private GraphicsContext gc;
     private List<Field> fieldList = new ArrayList<>();
-    private Player playerOne;
-    private Player playerTwo;
+    private Player playerOne = new Player();
+    private Player playerTwo = new Player();
+    private boolean isFirsPlayerTurn = true;
 
     public GameController(GraphicsContext gc, Stage primaryStage) {
         this.gc = gc;
         this.primaryStage = primaryStage;
+        randomSetPlayerType();
     }
 
     /**
@@ -34,7 +36,16 @@ public class GameController {
     public void handleClick(MouseEvent event) {
         int x = (int) (event.getX() / SQUARE_SIZE);
         int y = (int) (event.getY() / SQUARE_SIZE);
-        drawFigure(x, y, Type.O);
+        if (isFirsPlayerTurn) {
+            drawFigure(x, y, playerOne.getType());
+        } else {
+            drawFigure(x, y, playerTwo.getType());
+        }
+        isFirsPlayerTurn = !isFirsPlayerTurn;
+
+        if (isGameEnd()) {
+            primaryStage.close();
+        }
 
     }
 
@@ -66,15 +77,18 @@ public class GameController {
      * @param type figure type ENUM
      */
     private void drawFigure(int x, int y, Type type) {
+        Field field = findFieldByCoordinates(x, y);
+        if (!field.isEmpty()) {
+            return;
+        }
+        field.setEmpty(false);
+        field.setType(type);
         if (type == Type.X) {
             gc.setFill(Color.GREEN);
         } else if (type == Type.O) {
             gc.setFill(Color.YELLOW);
         }
         gc.fillRect(x * SQUARE_SIZE, y * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
-        Field field = findFieldByCoordinates(x, y);
-        field.setEmpty(false);
-        field.setType(type);
     }
 
     //UTIL METHODS
@@ -112,7 +126,23 @@ public class GameController {
      *
      * @return random boolean
      */
-    public static boolean getRandomBoolean() {
+    private boolean getRandomBoolean() {
         return Math.random() < 0.5;
     }
+
+    /**
+     * we use this method to check after every click is
+     * the game ended
+     *
+     * @return true if game ended otherwise false
+     */
+    private boolean isGameEnd() {
+        for (Field field : fieldList) {
+            if (field.isEmpty()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
 }
