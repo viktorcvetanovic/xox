@@ -36,15 +36,19 @@ public class GameController {
     public void handleClick(MouseEvent event) {
         int x = (int) (event.getX() / SQUARE_SIZE);
         int y = (int) (event.getY() / SQUARE_SIZE);
+        Field field = findFieldByCoordinates(x, y);
+        if (!field.isEmpty()) {
+            return;
+        }
         if (isFirsPlayerTurn) {
-            drawFigure(x, y, playerOne.getType());
+            drawFigure(x, y, playerOne.getType(), field);
         } else {
-            drawFigure(x, y, playerTwo.getType());
+            drawFigure(x, y, playerTwo.getType(), field);
         }
         isFirsPlayerTurn = !isFirsPlayerTurn;
 
         if (isGameEnd()) {
-            primaryStage.close();
+            resetGame();
         }
 
     }
@@ -76,8 +80,7 @@ public class GameController {
      * @param y    coordinate y
      * @param type figure type ENUM
      */
-    private void drawFigure(int x, int y, Type type) {
-        Field field = findFieldByCoordinates(x, y);
+    private void drawFigure(int x, int y, Type type, Field field) {
         if (!field.isEmpty()) {
             return;
         }
@@ -88,6 +91,9 @@ public class GameController {
         } else if (type == Type.O) {
             gc.setFill(Color.YELLOW);
         }
+        gc.setStroke(Color.BLUE);
+        gc.setLineWidth(100);
+        gc.stroke();
         gc.fillRect(x * SQUARE_SIZE, y * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE);
     }
 
@@ -137,12 +143,38 @@ public class GameController {
      * @return true if game ended otherwise false
      */
     private boolean isGameEnd() {
+
+
         for (Field field : fieldList) {
             if (field.isEmpty()) {
                 return false;
             }
         }
+
+
         return true;
+    }
+
+    /**
+     * we use this method to reset game and start
+     * again
+     */
+    private void resetGame() {
+        try {
+            Thread.sleep(500);
+            fieldList = new ArrayList<>();
+            drawCanvas();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    /**
+     * we use this method to exit game
+     */
+    private void exitGame() {
+        primaryStage.close();
     }
 
 }
